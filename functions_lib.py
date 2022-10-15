@@ -13,10 +13,10 @@ class BoundingBox:
         self.y2 = self.y1 + self.h
 
     def computeIOU(self, bbox2):
-        x1_intr = min(self.x1, bbox2.x1)
-        y1_intr = min(self.y1, bbox2.y1)
-        x2_intr = max(self.x2, bbox2.x2)
-        y2_intr = max(self.y2, bbox2.y2)
+        x1_intr = max(self.x1, bbox2.x1)
+        y1_intr = max(self.y1, bbox2.y1)
+        x2_intr = min(self.x2, bbox2.x2)
+        y2_intr = min(self.y2, bbox2.y2)
 
         w_intr = x2_intr - x1_intr
         h_intr = y2_intr - y1_intr
@@ -40,3 +40,25 @@ class Detection(BoundingBox):
         cv2.rectangle(image_gui, (self.x1, self.y1), (self.x2, self.y2), color, 3)
 
         cv2.putText(image_gui, 'D' + str(self.id), (self.x1, self.y1), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA)
+
+class Tracker():
+
+    def __init__(self, detection, id):
+        self.detections = [detection]
+        self.id = id
+        self.template = detection.image
+
+    def draw(self, image_gui, color=(255, 0, 255)):
+        last_detection = self.detections[-1]  # get the last detection
+        cv2.rectangle(image_gui, (last_detection.x1, last_detection.y1), (last_detection.x2, last_detection.y2), color, 3)
+
+        cv2.putText(image_gui, 'T' + str(self.id), (last_detection.x2 - 40, last_detection.y1), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA)
+
+    def addDetection(self, detection):
+        self.detections.append(detection)
+
+    def __str__(self):
+        text = 'T' + str(self.id) + ' Detection = ['
+
+        for detection in self.detections:
+            text += str(detection.id) + ', '

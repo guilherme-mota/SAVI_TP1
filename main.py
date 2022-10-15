@@ -14,7 +14,7 @@ from copy import deepcopy
 import cv2
 import numpy as np
 import pyttsx3
-from functions_lib import Detection
+from functions_lib import Detection, Tracker
 import threading 
 
 # ------------------------
@@ -38,8 +38,34 @@ def getUserInput():
     engine.say("Hello " + person_name)
     engine.runAndWait()
 
+# Get Intersection over Union value
+def computeIOU(bboxA, bboxB):
+    # determine the (x, y)-coordinates of the intersection rectangle
+	xA = max(bboxA[0], bboxB[0])
+	yA = max(bboxA[1], bboxB[1])
+	xB = min(bboxA[2], bboxB[2])
+	yB = min(bboxA[3], bboxB[3])
+
+	# compute the area of intersection rectangle
+	interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+
+	# compute the area of both the prediction and ground-truth
+	# rectangles
+	boxAArea = (bboxA[2] - bboxA[0] + 1) * (bboxA[3] - bboxA[1] + 1)
+	boxBArea = (bboxB[2] - bboxB[0] + 1) * (bboxB[3] - bboxB[1] + 1)
+
+	# compute the intersection over union by taking the intersection
+	# area and dividing it by the sum of prediction + ground-truth
+	# areas - the interesection area
+	iou = interArea / float(boxAArea + boxBArea - interArea)
+
+	# return the intersection over union value
+	return iou
+
 
 def main():
+
+    global person_name, input_read_control
 
     # ------------------------
     # Initialization
@@ -62,7 +88,9 @@ def main():
     # ------------------------
     bbox_area_threshold = 100000  # normal value >= 80000
     frame_counter = 0
+    traker_counter = 0
     detection_counter = 0
+    trackers = []
 
     # ------------------------
     # Execution
@@ -79,25 +107,66 @@ def main():
         # Detection of faces
         # ------------------------------------------
         bboxes = face_detector.detectMultiScale(image_gray, 1.1, 3, 0, (0, 0), (0, 0))
-        # print(bboxes)
 
-        # ------------------------------------------
-        # Create detections per haard cascade bbox
-        # ------------------------------------------
+        # ----------------------------------------------
+        # Create face detections per haard cascade bbox
+        # ----------------------------------------------
         detections = []
-        for bbox in bboxes:
+        for bbox in bboxes:  # cycle all bounding boxes
             x1, y1, w, h = bbox
-            # print(w * h)
+            
             if w * h > bbox_area_threshold:
                 detection = Detection(x1, y1, w, h, image_gray, detection_counter)
                 detection_counter += 1
                 detections.append(detection)
-                detection.draw(image_gui)  # draw bbox
+                detection.draw(image_gui)  # draw bbox around face detected
 
-                # Ask person detected name
-                ask_name_thread = threading.Thread(target = getUserInput)
-                if ask_name_thread.is_alive() == False and input_read_control == False:
-                    ask_name_thread.start()
+        # ------------------------------------------------------------------------------------
+        # For each detection, verify if there is alredy one tracker associated
+        # Remove detection from list if that's the case
+        # ------------------------------------------------------------------------------------
+        for detection in detections: # cycle all detections
+            for tracker in trackers: # cycle all trackers
+                template = tracker.template
+                h_template,w_template = template.shape
+
+                # Apply template Matching
+                res = cv2.matchTemplate(image_gray, template, cv2.TM_SQDIFF)
+
+                _, _, min_loc, _ = cv2.minMaxLoc(res)
+
+                x1_template, y1_template = min_loc
+                x2_template = x1_template + w_template
+                y2_template = y1_template + h_template
+
+                bboxA = [x1_template, y1_template, x2_template, y2_template]
+                bboxB = [detection.x1, detection.y1, detection.x2, detection.y2]
+
+                iou_value = computeIOU(bboxA, bboxB)
+
+                if iou_value > 0.6:
+                    cv2.rectangle(image_gui, (x1_template, y1_template), (x2_template, y2_template), (0,255,0), 3)
+
+                    cv2.putText(image_gui, tracker.id, (x1_template, y1_template), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv2.LINE_AA)
+
+                    detections.remove(detection)
+
+        # ------------------------------------------------
+        # Create tracker for new detection
+        # ------------------------------------------------
+        for detection in detections:  # cycle all detections
+            # Ask person detected his name
+            ask_name_thread = threading.Thread(target = getUserInput)
+
+            if ask_name_thread.is_alive() == False and input_read_control == False:
+                ask_name_thread.start()
+
+            if person_name != "":
+                tracker = Tracker(detection, person_name)
+                traker_counter += 1
+                trackers.append(tracker)
+
+                person_name = ""  # Reset person name variable
                 
 
         # Display Image Capture
