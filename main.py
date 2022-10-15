@@ -14,6 +14,29 @@ from copy import deepcopy
 import cv2
 import numpy as np
 import pyttsx3
+from functions_lib import Detection
+import threading 
+
+# ------------------------
+# Global Variables
+# ------------------------
+person_name = ""
+input_read_control = False
+
+# ------------------------
+# Functions
+# ------------------------
+def getUserInput():
+
+    global person_name, input_read_control
+
+    input_read_control = True  # Set control variable
+    person_name = input('What is your name?\n')  # Ask user input
+    input_read_control = False  # Reset control variable
+
+    engine = pyttsx3.init()
+    engine.say("Hello " + person_name)
+    engine.runAndWait()
 
 
 def main():
@@ -34,11 +57,12 @@ def main():
     # Load Pre-trained Classifiers
     face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml')
 
-    # Teste da biblioteca pyttsx3
-    # engine = pyttsx3.init()
-    # engine.say("I will speak this text")
-    # engine.runAndWait()
-    # exit(0)
+    # ------------------------
+    # Inittialize variables
+    # ------------------------
+    bbox_area_threshold = 100000  # normal value >= 80000
+    frame_counter = 0
+    detection_counter = 0
 
     # ------------------------
     # Execution
@@ -46,7 +70,7 @@ def main():
     while capture.isOpened():  # loop through all frames
         ret, image_original = capture.read()  # get a frame, ret will be true or false if getting succeeds
         image_gray = cv2.cvtColor(image_original, cv2.COLOR_BGR2GRAY)  # convert color image to gray
-        image_gui = deepcopy(image_original)
+        image_gui = deepcopy(image_original)  # image for graphical user interface
 
         if ret == False:
             break
@@ -54,13 +78,27 @@ def main():
         # ------------------------------------------
         # Detection of faces
         # ------------------------------------------
-        bboxes = face_detector.detectMultiScale(image_gray, 1.1, 3, 0, (0, 0), (0, 0));
-        print(bboxes)
+        bboxes = face_detector.detectMultiScale(image_gray, 1.1, 3, 0, (0, 0), (0, 0))
+        # print(bboxes)
 
-        # Draw bbox around faces
+        # ------------------------------------------
+        # Create detections per haard cascade bbox
+        # ------------------------------------------
+        detections = []
         for bbox in bboxes:
             x1, y1, w, h = bbox
-            cv2.rectangle(image_gui, (x1, y1), (x1+w, y1+h), (255, 0, 0), 3)
+            # print(w * h)
+            if w * h > bbox_area_threshold:
+                detection = Detection(x1, y1, w, h, image_gray, detection_counter)
+                detection_counter += 1
+                detections.append(detection)
+                detection.draw(image_gui)  # draw bbox
+
+                # Ask person detected name
+                ask_name_thread = threading.Thread(target = getUserInput)
+                if ask_name_thread.is_alive() == False and input_read_control == False:
+                    ask_name_thread.start()
+                
 
         # Display Image Capture
         cv2.imshow(window_name, image_gui)
@@ -68,11 +106,12 @@ def main():
         if cv2.waitKey(1) == ord('q'):
             break
 
+        frame_counter += 1
+
 
     # ------------------------
     # Termination
     # ------------------------
-    face_detector.delete()
     capture.release()
     cv2.destroyAllWindows()
 
