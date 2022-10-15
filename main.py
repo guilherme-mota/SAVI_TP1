@@ -13,6 +13,7 @@
 from copy import deepcopy
 import cv2
 import numpy as np
+import pyttsx3
 
 
 def main():
@@ -33,6 +34,11 @@ def main():
     # Load Pre-trained Classifiers
     face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml')
 
+    # Teste da biblioteca pyttsx3
+    # engine = pyttsx3.init()
+    # engine.say("I will speak this text")
+    # engine.runAndWait()
+    # exit(0)
 
     # ------------------------
     # Execution
@@ -66,6 +72,7 @@ def main():
     # ------------------------
     # Termination
     # ------------------------
+    face_detector.delete()
     capture.release()
     cv2.destroyAllWindows()
 
