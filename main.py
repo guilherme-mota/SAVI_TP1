@@ -13,7 +13,7 @@
 from copy import deepcopy
 import cv2
 import numpy as np
-import pyttsx3
+import pyttsx3 
 from functions_lib import Detection, Tracker
 import threading 
 
@@ -81,17 +81,22 @@ def main():
     cv2.resizeWindow(window_name, 800, 500)
 
     # Load Pre-trained Classifiers
-    face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml')
+    #face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml')
+    face_detector = cv2.CascadeClassifier('/home/miguel/Documents/SAVI_TP1/haarcascade_frontalface_default.xml')
+    body_detector = cv2.CascadeClassifier('/home/miguel/Documents/SAVI_TP1/haarcascade_fullbody.xml')
+
+    
 
     # ------------------------
     # Inittialize variables
-    # ------------------------
-    bbox_area_threshold = 100000  # normal value >= 80000
+    # ------------------------q
+    bbox_area_threshold = 10000  # normal value >= 80000
     frame_counter = 0
     traker_counter = 0
     detection_counter = 0
     trackers = []
 
+    
     # ------------------------
     # Execution
     # ------------------------
@@ -108,6 +113,13 @@ def main():
         # ------------------------------------------
         bboxes = face_detector.detectMultiScale(image_gray, 1.1, 3, 0, (0, 0), (0, 0))
 
+
+        # ------------------------------------------
+        # Detection of body
+        # ------------------------------------------
+        body_bboxes = body_detector.detectMultiScale(image_gray, 1.2, 3)
+
+
         # ----------------------------------------------
         # Create face detections per haard cascade bbox
         # ----------------------------------------------
@@ -120,6 +132,16 @@ def main():
                 detection_counter += 1
                 detections.append(detection)
                 detection.draw(image_gui)  # draw bbox around face detected
+
+        # ----------------------------------------------
+        # Create body detections per haard cascade bbox
+        # ----------------------------------------------q
+        body_detections = []
+        for body_bbox in body_bboxes:  # cycle all bounding boxes
+            body_x1, body_y1, body_w, body_h = body_bbox
+            
+            #cv2.rectangle(image_gui, (body_x1, body_y1), (body_x1 + body_w, body_y1 + body_h), (0,255,0), 3)
+
 
         # ------------------------------------------------------------------------------------
         # For each detection, verify if there is alredy one tracker associated
