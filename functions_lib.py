@@ -42,9 +42,10 @@ class BoundingBox:
 
 class Detection(BoundingBox):
 
-    def __init__(self, x1, y1, w, h, image_full, id):
+    def __init__(self, x1, y1, w, h, image_full, id,stamp):
         super().__init__(x1,y1,w,h) # call the super class constructor        
         self.id = id
+        self.stamp = stamp
         self.image =self.extractSmallImage(image_full)
         self.assigned_to_tracker = False
 
@@ -63,6 +64,7 @@ class Tracker():
         self.bboxes = []
         self.detections = []
         self.input_read_control = False 
+        self.time_since_last_detection = None
 
         # Create Tracker
         self.tracker = cv2.TrackerCSRT_create()
@@ -73,8 +75,13 @@ class Tracker():
     def updateTime(self, stamp):
         self.time_since_last_detection = round(stamp-self.getLastDetectionStamp(),1)
 
-        if self.time_since_last_detection > 2: # deactivate tracker        
+        if self.time_since_last_detection > 10: # deactivate tracker        
             self.active = False
+
+
+    def getLastDetectionStamp(self):
+        return self.detections[-1].stamp # get the last detection
+        
 
     def drawLastDetection(self, image_gui, color=(0, 255, 0)):
         last_detection = self.detections[-1] # get the last detection
@@ -88,20 +95,21 @@ class Tracker():
 
     def draw(self, image_gui, color=(0, 255, 0)):
 
-        if not self.active:
-            color = (100,100,100)
+        #if not self.active:
+        #    color = (100,100,100)
+        if self.active:
 
-        bbox = self.bboxes[-1] # get last bbox
+            bbox = self.bboxes[-1] # get last bbox
 
-        cv2.rectangle(image_gui,(bbox.x1,bbox.y1),(bbox.x2, bbox.y2),color,3)
+            cv2.rectangle(image_gui,(bbox.x1,bbox.y1),(bbox.x2, bbox.y2),color,3)
 
-        cv2.putText(image_gui, 'T' + str(self.id), 
-                            (bbox.x1, bbox.y1-5), cv2.FONT_HERSHEY_SIMPLEX, 
-                        1, color, 2, cv2.LINE_AA)
+            cv2.putText(image_gui, 'T' + str(self.id), 
+                                (bbox.x1, bbox.y1-5), cv2.FONT_HERSHEY_SIMPLEX, 
+                            1, color, 2, cv2.LINE_AA)
 
-        cv2.putText(image_gui, str(self.time_since_last_detection) + ' s', 
-                            (bbox.x1, bbox.y1-25), cv2.FONT_HERSHEY_SIMPLEX, 
-                        1, color, 2, cv2.LINE_AA)
+            cv2.putText(image_gui, str(self.time_since_last_detection) + ' s', 
+                                (bbox.x1, bbox.y1-25), cv2.FONT_HERSHEY_SIMPLEX, 
+                            1, color, 2, cv2.LINE_AA)
 
 
     def addDetection(self, detection, image):
