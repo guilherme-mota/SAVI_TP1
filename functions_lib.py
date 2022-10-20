@@ -74,10 +74,32 @@ class Tracker():
 
     def updateTime(self, stamp):
         self.time_since_last_detection = round(stamp-self.getLastDetectionStamp(),1)
+        
+        time_treshold = 10
+        
+        # =========================================
+        # deactivate tracker with time treshold
+        # ========================================
+        
+        bbox = self.bboxes[-1]
 
-        if self.time_since_last_detection > 10: # deactivate tracker        
+        # if the face tracker exceeds the image limits, the tracker's active 
+        # time decreases (eventually predict a screen exit)
+
+        if bbox.x2 > 590:       # Image 480 x 640 --> width darken frame = 50
+            time_treshold = 2
+        if bbox.x1 < 50:
+            time_treshold = 2
+        if bbox.y1 < 50:
+            time_treshold = 2
+        if bbox.y2 > 430:
+            time_treshold = 2
+
+      
+        if self.time_since_last_detection > time_treshold:         
             self.active = False
 
+        
 
     def getLastDetectionStamp(self):
         return self.detections[-1].stamp # get the last detection
