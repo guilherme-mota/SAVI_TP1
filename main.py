@@ -10,39 +10,17 @@
 # ------------------------
 # Imports
 # ------------------------
-from copy import deepcopy
+import os
 import cv2
-import numpy as np
 import pyttsx3 
-from functions_lib import Detection, Tracker
-import threading 
-
-# ------------------------
-# Global Variables
-# ------------------------
-person_name = ""
-input_read_control = False
-
-# ------------------------
-# Functions
-# ------------------------
-def getUserInput():
-
-    global person_name, input_read_control
-
-    input_read_control = True  # Set control variable
-    person_name = input('What is your name?\n')  # Ask user input
-    input_read_control = False  # Reset control variable
-
-    engine = pyttsx3.init()
-    engine.say("Hello " + person_name)
-    engine.runAndWait()
+import threading
+import numpy as np
+import face_recognition
+from copy import deepcopy
+from functions_lib import Detection, Tracker, FaceRecognition
 
 
 def main():
-
-    global person_name, input_read_control
-
     # ------------------------
     # Initialization
     # ------------------------
@@ -57,17 +35,20 @@ def main():
     cv2.resizeWindow(window_name, 800, 500)
 
     # Load Pre-trained Classifiers
-    # face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml')  # /home/miguel/Documents/SAVI_TP1/  
-    face_detector = cv2.CascadeClassifier('/home/miguel/Documents/SAVI_TP1/haarcascade_frontalface_default.xml')
+    face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml')  # /home/miguel/Documents/SAVI_TP1/  
+    # face_detector = cv2.CascadeClassifier('/home/miguel/Documents/SAVI_TP1/haarcascade_frontalface_default.xml')
+    
     # ------------------------
     # Inittialize variables
     # ------------------------
-    bbox_area_threshold = 20000  # normal value >= 80000
+    bbox_area_threshold = 100000  # normal value >= 80000
     iou_threshold = 0.6  # normal value >= 0.7
+    face_distances_threshold = 0.5
     frame_counter = 0
     tracker_counter = 0
     detection_counter = 0
     trackers = []
+    face_recognition_obj = FaceRecognition('Image_Database')
     
 
     # ------------------------
@@ -77,13 +58,14 @@ def main():
         ret, image_original = capture.read()  # get a frame, ret will be true or false if getting succeeds
         image_gray = cv2.cvtColor(image_original, cv2.COLOR_BGR2GRAY)  # convert color image to gray
         image_gui = deepcopy(image_original)  # image for graphical user interface
-        [H,W,NC] = image_gui.shape
+        [H, W, NC] = image_gui.shape
         darken_bbox = [50, 50, W-50, H-50]
 
 
         if ret == False:
             break
 
+        # time stamp
         stamp = float(capture.get(cv2.CAP_PROP_POS_MSEC))/1000
 
 
@@ -138,11 +120,36 @@ def main():
                 tracker_counter += 1
                 trackers.append(tracker)
 
-                # Ask person detected his name
-                ask_name_thread = threading.Thread(target = tracker.getUserInput)
+                # verify face match with image database
+                face_recognition_obj.readFilesInPath()
 
-                if ask_name_thread.is_alive() == False and tracker.input_read_control == False:
-                    ask_name_thread.start()
+                if len(face_recognition_obj.list_of_files) > 0:
+                    face_recognition_obj.encode_list = []  # reset encode list
+                    face_recognition_obj.findEncodings()
+
+                    img_rgb = cv2.cvtColor(image_gui, cv2.COLOR_BGR2RGB)
+                    face_location = (detection.y1, detection.x2, detection.y2, detection.x1)
+                    encode_current_detection = face_recognition.face_encodings(img_rgb, [face_location])
+
+                    # Compare face detected with list of faces known
+                    matches = face_recognition.compare_faces(face_recognition_obj.encode_list, encode_current_detection[0])
+                    face_distances = face_recognition.face_distance(face_recognition_obj.encode_list, encode_current_detection[0])
+
+                    # Get index of lowest distance
+                    match_index = np.argmin(face_distances)
+
+                    if face_distances[match_index] < face_distances_threshold:
+                        tracker.id = face_recognition_obj.images_names[match_index]
+
+                        engine = pyttsx3.init()
+                        engine.say("Hello " + str(tracker.id))
+                        engine.runAndWait()
+                else:
+                    # Ask person detected his name
+                    ask_name_thread = threading.Thread(target = tracker.getUserInput)
+
+                    if ask_name_thread.is_alive() == False and tracker.input_read_control == False:
+                        ask_name_thread.start()
 
         # ------------------------------------------
         # Draw stuff
@@ -155,7 +162,6 @@ def main():
         # Draw trackers
         for tracker in trackers:
             tracker.draw(image_gui)  # draw green bbox around face tracked
-
 
         # Draw zone that disables trackers
         image_gui[:, 0:50] = (image_gui [:, 0:50]* 0.3).astype(np.uint8)
