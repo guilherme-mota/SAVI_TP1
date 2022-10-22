@@ -17,7 +17,9 @@ import threading
 import numpy as np
 import face_recognition
 from copy import deepcopy
-from functions_lib import Detection, Tracker, FaceRecognition
+from tracker import Tracker
+from detection import Detection
+from facerecognition import FaceRecognition
 
 
 def main():
@@ -142,9 +144,13 @@ def main():
                     if face_distances[match_index] < face_distances_threshold:
                         tracker.id = face_recognition_obj.images_names[match_index]
 
-                        engine = pyttsx3.init()
-                        engine.say("Hello " + str(tracker.id))
-                        engine.runAndWait()
+                        tracker.greetPerson()
+                    else:
+                        # Ask person detected his name
+                        ask_name_thread = threading.Thread(target = tracker.getUserInput)
+
+                        if ask_name_thread.is_alive() == False and tracker.input_read_control == False:
+                            ask_name_thread.start()
                 else:
                     # Ask person detected his name
                     ask_name_thread = threading.Thread(target = tracker.getUserInput)
