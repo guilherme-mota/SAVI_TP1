@@ -58,8 +58,8 @@ def main():
         ret, image_original = capture.read()  # get a frame, ret will be true or false if getting succeeds
         image_gray = cv2.cvtColor(image_original, cv2.COLOR_BGR2GRAY)  # convert color image to gray
         image_gui = deepcopy(image_original)  # image for graphical user interface
-        [H, W, NC] = image_gui.shape
-        darken_bbox = [50, 50, W-50, H-50]
+        [H,W,NC] = image_gui.shape
+        #darken_bbox = [50, 50, W-50, H-50]
 
 
         if ret == False:
@@ -105,10 +105,11 @@ def main():
                 tracker.track(image_gray)
 
         # ------------------------------------------
-        # Deactive Tracker 
+        # Deactivate Tracker
         # ------------------------------------------
         for tracker in trackers:
             tracker.updateTime(stamp)
+
 
         # ------------------------------------------
         # Create Tracker for each Detection
