@@ -1,6 +1,7 @@
 import cv2
 import pyttsx3
 from detection import BoundingBox
+from colorama import Fore, Back, Style
 
 class Tracker():
 
@@ -98,7 +99,7 @@ class Tracker():
 
     def getUserInput(self):
         self.input_read_control = True  # Set control variable
-        self.id = input('What is your first name T' + str(self.id) + '?\n')  # Ask user input
+        self.id = input(Fore.GREEN + 'What is your first name T' + str(self.id) + '?\n' + Style.RESET_ALL)  # Ask user input
         self.input_read_control = False  # Reset control variable
 
         # Save image of new face detected in database

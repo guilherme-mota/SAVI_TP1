@@ -28,8 +28,7 @@ def main():
     # ------------------------
 
     # Print TP1 SAVI 2022
-    print(Fore.RED  + 'TP1 SAVI 2022')
-    print(Fore.RESET)
+    print(Fore.RED  + 'TP1 SAVI 2022\n' + Style.RESET_ALL)
 
     capture = cv2.VideoCapture(0)
     if capture.isOpened() == False:
@@ -42,8 +41,8 @@ def main():
     cv2.resizeWindow(window_name, 800, 500)
 
     # Load Pre-trained Classifiers
-    #face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml') 
-    face_detector = cv2.CascadeClassifier('/home/miguel/Documents/SAVI_TP1/haarcascade_frontalface_default.xml')
+    face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml') 
+    #face_detector = cv2.CascadeClassifier('/home/miguel/Documents/SAVI_TP1/haarcascade_frontalface_default.xml')
     
 
     # ------------------------
