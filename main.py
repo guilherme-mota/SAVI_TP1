@@ -20,12 +20,17 @@ from copy import deepcopy
 from tracker import Tracker
 from detection import Detection
 from facerecognition import FaceRecognition
-
+from colorama import Fore, Back, Style
 
 def main():
     # ------------------------
     # Initialization
     # ------------------------
+
+    # Print TP1 SAVI 2022
+    print(Fore.RED  + 'TP1 SAVI 2022')
+    print(Fore.RESET)
+
     capture = cv2.VideoCapture(0)
     if capture.isOpened() == False:
         print("Error opening video stream or file!")
@@ -37,13 +42,14 @@ def main():
     cv2.resizeWindow(window_name, 800, 500)
 
     # Load Pre-trained Classifiers
-    face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml')  # /home/miguel/Documents/SAVI_TP1/  
-    # face_detector = cv2.CascadeClassifier('/home/miguel/Documents/SAVI_TP1/haarcascade_frontalface_default.xml')
+    #face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml') 
+    face_detector = cv2.CascadeClassifier('/home/miguel/Documents/SAVI_TP1/haarcascade_frontalface_default.xml')
     
+
     # ------------------------
     # Inittialize variables
     # ------------------------
-    bbox_area_threshold = 100000  # normal value >= 80000
+    bbox_area_threshold = 80000  # normal value >= 80000
     iou_threshold = 0.6  # normal value >= 0.7
     face_distances_threshold = 0.5
     frame_counter = 0
@@ -63,11 +69,10 @@ def main():
         [H,W,NC] = image_gui.shape
         #darken_bbox = [50, 50, W-50, H-50]
 
-
         if ret == False:
             break
 
-        # time stamp
+        # Time stamp
         stamp = float(capture.get(cv2.CAP_PROP_POS_MSEC))/1000
 
 
@@ -75,6 +80,7 @@ def main():
         # Detection of faces
         # ------------------------------------------
         bboxes = face_detector.detectMultiScale(image_gray, 1.1, 3 , 0, (0, 0), (0, 0))
+
 
         # ----------------------------------------------
         # Create face detections per haard cascade bbox
@@ -87,6 +93,7 @@ def main():
             detection_counter += 1
             detections.append(detection)  # add new detection to list of detections
 
+
         # --------------------------------------------------------------------
         # For each detection, verify if there already a tracker associated to
         # --------------------------------------------------------------------
@@ -97,6 +104,7 @@ def main():
                 if iou > iou_threshold: # if condition is verified, associate detection with tracker 
                     tracker.addDetection(detection, image_gray)
 
+
         # ------------------------------------------
         # Track without using detection
         # ------------------------------------------
@@ -105,6 +113,7 @@ def main():
             detection_ids = [d.id for d in detections]  # get all detection id's in the list detections
             if not last_detection_id in detection_ids:  # id last detection id isn't found in the list, track using other method
                 tracker.track(image_gray)
+
 
         # ------------------------------------------
         # Deactivate Tracker
@@ -119,6 +128,7 @@ def main():
         for detection in detections:
             # verify if theres already a tracker associated and if the face is close to the camera
             if not detection.assigned_to_tracker and detection.area > bbox_area_threshold:
+                print(Fore.RED)
                 tracker = Tracker(detection, id=tracker_counter, image=image_gray)
                 tracker_counter += 1
                 trackers.append(tracker)
@@ -158,6 +168,7 @@ def main():
                     if ask_name_thread.is_alive() == False and tracker.input_read_control == False:
                         ask_name_thread.start()
 
+
         # ------------------------------------------
         # Draw stuff
         # ------------------------------------------
@@ -178,7 +189,7 @@ def main():
 
         # Display Image Capture
         cv2.imshow(window_name, image_gui)
-
+        
         if cv2.waitKey(1) == ord('q'):
             break
 

@@ -64,13 +64,15 @@ class Tracker():
 
             cv2.rectangle(image_gui,(bbox.x1,bbox.y1),(bbox.x2, bbox.y2),color,3)
 
-            cv2.putText(image_gui, 'T' + str(self.id), 
-                                (bbox.x1, bbox.y1-5), cv2.FONT_HERSHEY_SIMPLEX, 
-                            1, color, 2, cv2.LINE_AA)
+            cv2.rectangle(image_gui,(bbox.x1,bbox.y1), (bbox.x2, bbox.y1-35),color, -1)
+
+            cv2.putText(image_gui, 'T ' + str(self.id), 
+                                (bbox.x1, bbox.y1-10), cv2.FONT_HERSHEY_SIMPLEX, 
+                            0.8, (255,255,255), 2, cv2.LINE_AA)
 
             cv2.putText(image_gui, str(self.time_since_last_detection) + ' s', 
-                                (bbox.x1, bbox.y1-25), cv2.FONT_HERSHEY_SIMPLEX, 
-                            1, color, 2, cv2.LINE_AA)
+                                (bbox.x2-60, bbox.y2-10), cv2.FONT_HERSHEY_SIMPLEX, 
+                            0.6, color, 2, cv2.LINE_AA)
 
 
     def addDetection(self, detection, image):
