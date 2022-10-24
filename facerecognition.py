@@ -11,13 +11,14 @@ class FaceRecognition():
         self.images_names = []
         self.list_of_files = []
         self.encode_list = []
+        self.n_people = 0
 
     def readFilesInPath(self):
         # Read files in path
         self.list_of_files = os.listdir(self.path)
-        n_people =  len(self.list_of_files)
-        print(Fore.RED  + 'Number of People in Database: ' + str(n_people) + Style.RESET_ALL)
-        print(Fore.RED  + 'List of Images in Database: ' + str(self.list_of_files) + '\n' + Style.RESET_ALL)
+        self.n_people =  len(self.list_of_files)
+        # print(Fore.RED  + 'Number of People in Database: ' + str(n_people) + Style.RESET_ALL)
+        # print(Fore.RED  + 'List of Images in Database: ' + str(self.list_of_files) + '\n' + Style.RESET_ALL)
         
         # Cycle through all files in the directory
         for file in self.list_of_files:

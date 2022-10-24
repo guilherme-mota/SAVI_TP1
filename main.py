@@ -41,8 +41,8 @@ def main():
     cv2.resizeWindow(window_name, 800, 500)
 
     # Load Pre-trained Classifiers
-    #face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml') 
-    face_detector = cv2.CascadeClassifier('/home/miguel/Documents/SAVI_TP1/haarcascade_frontalface_default.xml')
+    face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml') 
+    #face_detector = cv2.CascadeClassifier('/home/miguel/Documents/SAVI_TP1/haarcascade_frontalface_default.xml')
     
 
     # ------------------------
@@ -141,6 +141,11 @@ def main():
                 face_recognition_obj.readFilesInPath()
 
                 if len(face_recognition_obj.list_of_files) > 0:
+                    # print database information
+                    if tracker.input_read_control == False:
+                        print(Fore.RED  + 'Number of People in Database: ' + str(face_recognition_obj.n_people) + Style.RESET_ALL)
+                        print(Fore.RED  + 'List of Images in Database: ' + str(face_recognition_obj.list_of_files) + '\n' + Style.RESET_ALL)
+
                     face_recognition_obj.encode_list = []  # reset encode list
                     face_recognition_obj.findEncodings()
 
