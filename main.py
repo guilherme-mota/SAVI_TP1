@@ -41,14 +41,14 @@ def main():
     cv2.resizeWindow(window_name, 800, 500)
 
     # Load Pre-trained Classifiers
-    face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml') 
-    #face_detector = cv2.CascadeClassifier('/home/miguel/Documents/SAVI_TP1/haarcascade_frontalface_default.xml')
+    #face_detector = cv2.CascadeClassifier('/home/guilherme/workingcopy/opencv-4.5.4/data/haarcascades/haarcascade_frontalface_default.xml') 
+    face_detector = cv2.CascadeClassifier('/home/miguel/Documents/SAVI_TP1/haarcascade_frontalface_default.xml')
     
 
     # ------------------------
     # Inittialize variables
     # ------------------------
-    bbox_area_threshold = 80000  # normal value >= 80000
+    bbox_area_threshold = 40000  # normal value >= 80000
     iou_threshold = 0.6  # normal value >= 0.7
     face_distances_threshold = 0.5
     frame_counter = 0
@@ -57,6 +57,12 @@ def main():
     trackers = []
     face_recognition_obj = FaceRecognition('Image_Database')
     
+    print(Fore.RED)
+    print("Area Threshold: " + str(bbox_area_threshold) + " (normal values >= 80k)\n ")
+    print("IOU Threshold: " + str(iou_threshold) + " (normal values >= 0.6)\n ")
+    print("Face Recognition Distance Threshold: " + str(face_distances_threshold) + " (normal value = 0.5)\n " + Style.RESET_ALL )
+
+
 
     # ------------------------
     # Execution
@@ -112,7 +118,6 @@ def main():
             detection_ids = [d.id for d in detections]  # get all detection id's in the list detections
             if not last_detection_id in detection_ids:  # id last detection id isn't found in the list, track using other method
                 tracker.track(image_gray)
-
 
         # ------------------------------------------
         # Deactivate Tracker
