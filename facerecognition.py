@@ -17,7 +17,7 @@ class FaceRecognition():
         # Read files in path
         self.list_of_files = os.listdir(self.path)
         self.n_people =  len(self.list_of_files)
-        # print(Fore.RED  + 'Number of People in Database: ' + str(n_people) + Style.RESET_ALL)
+        # print(Fore.RED  + 'Number of People in Database: ' + str(self.n_people) + Style.RESET_ALL)
         # print(Fore.RED  + 'List of Images in Database: ' + str(self.list_of_files) + '\n' + Style.RESET_ALL)
         
         # Cycle through all files in the directory

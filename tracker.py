@@ -1,3 +1,4 @@
+import os
 import cv2
 import pyttsx3
 from detection import BoundingBox
@@ -100,12 +101,24 @@ class Tracker():
     def getUserInput(self):
         self.input_read_control = True  # Set control variable
         self.id = input(Fore.GREEN + 'What is your first name T' + str(self.id) + '?\n' + Style.RESET_ALL)  # Ask user input
-        self.input_read_control = False  # Reset control variable
+        # self.input_read_control = False  # Reset control variable
 
         # Save image of new face detected in database
         img_rgb = cv2.cvtColor(self.template, cv2.COLOR_GRAY2BGR)
         img_rgb = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2RGB)
         cv2.imwrite('Image_Database/' + str(self.id) + '.jpg', img_rgb)
+
+        # Greet Person
+        self.greetPerson()
+
+        # Print database data
+        list_of_files = os.listdir('Image_Database')
+        n_people =  len(list_of_files)
+
+        print(Fore.RED  + '\nNumber of People in Database: ' + str(n_people) + Style.RESET_ALL)
+        print(Fore.RED  + 'List of Images in Database: ' + str(list_of_files) + '\n' + Style.RESET_ALL)
+
+        self.input_read_control = False  # Reset control variable
 
     def greetPerson(self):
         engine = pyttsx3.init()
