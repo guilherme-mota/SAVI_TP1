@@ -48,7 +48,7 @@ def main():
     # ------------------------
     # Inittialize variables
     # ------------------------
-    bbox_area_threshold = 40000  # normal value >= 80000
+    bbox_area_threshold = 100000  # normal value >= 80000
     iou_threshold = 0.6  # normal value >= 0.7
     face_distances_threshold = 0.5
     frame_counter = 0
@@ -142,9 +142,9 @@ def main():
 
                 if len(face_recognition_obj.list_of_files) > 0:
                     # print database information
-                    if tracker.input_read_control == False:
-                        print(Fore.RED  + 'Number of People in Database: ' + str(face_recognition_obj.n_people) + Style.RESET_ALL)
-                        print(Fore.RED  + 'List of Images in Database: ' + str(face_recognition_obj.list_of_files) + '\n' + Style.RESET_ALL)
+                    # if tracker.input_read_control == False:
+                    #     print(Fore.RED  + 'Number of People in Database: ' + str(face_recognition_obj.n_people) + Style.RESET_ALL)
+                    #     print(Fore.RED  + 'List of Images in Database: ' + str(face_recognition_obj.list_of_files) + '\n' + Style.RESET_ALL)
 
                     face_recognition_obj.encode_list = []  # reset encode list
                     face_recognition_obj.findEncodings()
